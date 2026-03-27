@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YTGrab — YouTube Downloader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ░░ Background grain ░░ -->
+  <div class="bg-grain" aria-hidden="true"></div>
+
+  <!-- ░░ Dark-mode toggle ░░ -->
+  <button class="theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+    <span class="icon-sun">☀</span>
+    <span class="icon-moon">☽</span>
+  </button>
+
+  <!-- ░░ Header ░░ -->
+  <header class="site-header">
+    <div class="logo">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+        <rect width="34" height="34" rx="10" fill="currentColor"/>
+        <polygon points="13,10 26,17 13,24" fill="var(--bg)"/>
+      </svg>
+      <span>YTGrab</span>
+    </div>
+    <p class="tagline">Paste. Grab. Done.</p>
+  </header>
+
+  <!-- ░░ Main card ░░ -->
+  <main class="main">
+
+    <section class="search-card" id="searchCard">
+      <label class="search-label" for="urlInput">YouTube URL</label>
+
+      <div class="input-row">
+        <div class="input-wrap">
+          <span class="input-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+          </span>
+          <input
+            type="url"
+            id="urlInput"
+            class="url-input"
+            placeholder="https://www.youtube.com/watch?v=..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="clear-btn" id="clearBtn" title="Clear" aria-label="Clear input" hidden>✕</button>
+        </div>
+        <button class="fetch-btn" id="fetchBtn">
+          <span class="btn-label">Get Video</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <p class="error-msg" id="errorMsg" role="alert" hidden></p>
+    </section>
+
+    <!-- ░░ Result card ░░ -->
+    <section class="result-card" id="resultCard" hidden>
+
+      <div class="result-top">
+        <div class="thumb-wrap">
+          <img id="thumbnail" class="thumbnail" src="" alt="Video thumbnail" />
+          <button class="preview-btn" id="previewBtn" title="Preview video">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            Preview
+          </button>
+        </div>
+
+        <div class="meta">
+          <h2 class="video-title" id="videoTitle"></h2>
+          <p class="video-author" id="videoAuthor"></p>
+          <div class="video-stats">
+            <span id="videoDuration"></span>
+            <span id="videoViews"></span>
+          </div>
+          <div class="meta-actions">
+            <button class="copy-btn" id="copyBtn" title="Copy YouTube URL">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy link
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview iframe (hidden until clicked) -->
+      <div class="preview-wrap" id="previewWrap" hidden>
+        <div class="preview-header">
+          <span>Preview</span>
+          <button class="close-preview" id="closePreview" aria-label="Close preview">✕</button>
+        </div>
+        <div class="iframe-container">
+          <iframe id="previewFrame" src="" allowfullscreen title="Video preview"></iframe>
+        </div>
+      </div>
+
+      <!-- Format list -->
+      <div class="formats-section">
+        <div class="formats-header">
+          <h3>Download Formats</h3>
+          <div class="filter-tabs" id="filterTabs">
+            <button class="tab active" data-filter="all">All</button>
+            <button class="tab" data-filter="video">Video</button>
+            <button class="tab" data-filter="audio">Audio</button>
+          </div>
+        </div>
+        <ul class="formats-list" id="formatsList"></ul>
+      </div>
+
+      <button class="new-search-btn" id="newSearchBtn">↩ Search another video</button>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>For personal use only · Respect copyright</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
