@@ -1,35 +1,38 @@
 const express = require("express");
 const cors = require("cors");
+const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
-const youtubedl = require("youtube-dl-exec");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
+function run(cmd) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
+      if (err) reject(new Error(stderr || err.message));
+      else resolve(stdout.trim());
+    });
+  });
+}
 
 app.get("/api/info", async (req, res) => {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: "URL missing." });
 
   try {
-    const info = await youtubedl(url, {
-      dumpSingleJson: true,
-      noWarnings: true,
-      noCallHome: true,
-      noCheckCertificate: true,
-      preferFreeFormats: true,
-      youtubeSkipDashManifest: true,
-    });
+    const raw = await run(`yt-dlp --dump-json --no-playlist "${url}"`);
+    const info = JSON.parse(raw);
 
     const formats = [
       { itag: "360", quality: "360p", container: "mp4", hasVideo: true, hasAudio: true },
       { itag: "480", quality: "480p", container: "mp4", hasVideo: true, hasAudio: true },
-      { itag: "720", quality: "720p", container: "mp4", hasVideo: true, hasAudio: true },
+      { itag: "720", quality: "720p",  container: "mp4", hasVideo: true, hasAudio: true },
       { itag: "1080", quality: "1080p", container: "mp4", hasVideo: true, hasAudio: true },
       { itag: "audio", quality: "Audio Only (MP3)", container: "mp3", hasVideo: false, hasAudio: true },
     ];
@@ -62,21 +65,23 @@ app.get("/api/download", async (req, res) => {
     .replace(/\s+/g, "_")
     .substring(0, 80);
 
+  // Temp file path
   const tmpFile = path.join(os.tmpdir(), `ytgrab_${Date.now()}.${ext}`);
 
-  const format = isAudio
-    ? "bestaudio"
-    : `bestvideo[height<=${itag}]+bestaudio/best[height<=${itag}]`;
+  // Format select
+  let format;
+  if (isAudio) {
+    format = "bestaudio";
+  } else {
+    format = `bestvideo[height<=${itag}]+bestaudio/best[height<=${itag}]`;
+  }
+
+  const cmd = `yt-dlp -f "${format}" --merge-output-format ${ext} -o "${tmpFile}" --no-playlist "${url}"`;
+
+  console.log("Downloading:", cmd);
 
   try {
-    await youtubedl(url, {
-      format,
-      mergeOutputFormat: ext,
-      output: tmpFile,
-      noWarnings: true,
-      noCallHome: true,
-      noCheckCertificate: true,
-    });
+    await run(cmd);
 
     if (!fs.existsSync(tmpFile)) {
       return res.status(500).json({ error: "File not created." });
@@ -86,12 +91,18 @@ app.get("/api/download", async (req, res) => {
     res.setHeader("Content-Type", isAudio ? "audio/mpeg" : "video/mp4");
     res.setHeader("Content-Length", fs.statSync(tmpFile).size);
 
-    const stream = fs.createReadStream(tmpFile);
-    stream.pipe(res);
-    stream.on("close", () => fs.unlink(tmpFile, () => {}));
+    const fileStream = fs.createReadStream(tmpFile);
+    fileStream.pipe(res);
+
+    fileStream.on("close", () => {
+      fs.unlink(tmpFile, () => {});
+    });
+
   } catch (err) {
     console.error(err.message);
-    if (!res.headersSent) res.status(500).json({ error: "Download failed." });
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Download failed." });
+    }
     fs.unlink(tmpFile, () => {});
   }
 });
