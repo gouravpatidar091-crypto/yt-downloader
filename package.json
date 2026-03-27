@@ -1,16 +1,21 @@
 {
   "name": "yt-downloader",
   "version": "1.0.0",
+  "description": "YouTube Video Downloader Web App",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "youtube-dl-exec": "^2.4.0"
+    "ytdl-core": "^4.11.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   },
   "engines": {
-    "node": "18.x"
+    "node": ">=14.0.0"
   }
 }
